@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -15,10 +15,12 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     joystickwidget.cpp \
-    slider.cpp
+    slider.cpp \
+    client.cpp
 
 HEADERS  += mainwindow.h \
     joystickwidget.h \
-    slider.h
+    slider.h \
+    client.h
 
 FORMS    += mainwindow.ui
