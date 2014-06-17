@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network
+QT       += core gui bluetooth
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -16,11 +16,16 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     joystickwidget.cpp \
     slider.cpp \
-    client.cpp
+    bluetoothhandler.cpp
 
 HEADERS  += mainwindow.h \
     joystickwidget.h \
     slider.h \
-    client.h
+    bluetoothhandler.h
 
 FORMS    += mainwindow.ui
+
+ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+
+OTHER_FILES += \
+    android/AndroidManifest.xml

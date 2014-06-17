@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
     padControl = new PadControl(this);
     sliderLabel = new  QLabel("0", this);
     padLabel = new QLabel("x=0 y=0",this);
+    bluetoothClient = new BluetoothControler(this);
 
     sliderLabel->setMaximumHeight(20);
     padLabel->setMaximumHeight(20);
@@ -33,6 +34,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(sliderControl, SIGNAL(positionChanged(int,int,int,int)), this, SLOT(positionChanged(int,int,int,int)));
     connect(padControl, SIGNAL(positionChanged(int,int,int,int)), this, SLOT(positionChanged(int,int,int,int)));
     connect(padControl, SIGNAL(mouseReleased()), this, SLOT(resetCoordinates()));
+
+    createActions();
+    createMenus();
 }
 
 MainWindow::~MainWindow()
@@ -60,4 +64,18 @@ void MainWindow::positionChanged(int x, int y, int width, int height)
 
 void MainWindow::resetCoordinates(){
     padLabel->setText("x=0 y=0");
+}
+
+void MainWindow::createActions()
+{
+    scanAction = new QAction("Scan", this);
+    scanAction->setStatusTip("Scan for bluetooth devices");
+
+    connect(scanAction, SIGNAL(triggered()), bluetoothClient, SLOT(startDiscovery()));
+}
+
+void MainWindow::createMenus()
+{
+    scanMenu = menuBar()->addMenu("Settings");
+    scanMenu->addAction(scanAction);
 }

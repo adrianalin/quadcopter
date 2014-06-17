@@ -18,15 +18,15 @@ void JoyStickWidget::paintEvent(QPaintEvent *)
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
 
-void JoyStickWidget::mousePressEvent(QMouseEvent * event ){
-//    qDebug()<<"mouse pressed";
+void JoyStickWidget::mousePressEvent(QMouseEvent * event ) {
+    Q_UNUSED(event)
+    qDebug()<<"mouse pressed";
 }
 
-void JoyStickWidget::mouseMoveEvent(QMouseEvent *event){
+void JoyStickWidget::mouseMoveEvent(QMouseEvent *event) {
     eventRate++;
     if(eventRate%10 != 0)
         return ;
-
 
     int y = event->y() - this->height();
     int x = event->x();
@@ -36,7 +36,8 @@ void JoyStickWidget::mouseMoveEvent(QMouseEvent *event){
 }
 
 void JoyStickWidget::mouseReleaseEvent(QMouseEvent *event){
-//    qDebug()<<"mouse release";
+    Q_UNUSED(event)
+    qDebug()<<"mouse release";
 }
 
 //*****************************************PadControl class, deriver from JoyStickWidget**************************************************
@@ -65,5 +66,6 @@ void PadControl::paintEvent(QPaintEvent *){
 }
 
 void PadControl::mouseReleaseEvent(QMouseEvent *event){
+    Q_UNUSED(event)
     emit mouseReleased();
 }

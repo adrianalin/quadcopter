@@ -8,6 +8,7 @@
 
 #include "slider.h"
 #include "joystickwidget.h"
+#include "bluetoothhandler.h"
 
 namespace Ui {
 class MainWindow;
@@ -16,6 +17,9 @@ class MainWindow;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
+
+    void createActions();
+    void createMenus();
 
 public:
     explicit MainWindow(QWidget *parent = 0);
@@ -26,6 +30,9 @@ private slots:
     void resetCoordinates();
 
 private:
+    BluetoothControler* bluetoothClient;
+    QMenu* scanMenu;
+    QAction* scanAction;
     QLabel* sliderLabel, *padLabel;
     Ui::MainWindow *ui;
     QGridLayout* layout;
