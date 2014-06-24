@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "QMessageBox"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -13,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
     padControl = new PadControl(this);
     sliderLabel = new  QLabel("0", this);
     padLabel = new QLabel("x=0 y=0",this);
-    bluetoothClient = new BluetoothControler(this);
+    bluetoothClient = new BluetoothHandler(this);
 
     sliderLabel->setMaximumHeight(20);
     padLabel->setMaximumHeight(20);
@@ -31,12 +32,18 @@ MainWindow::MainWindow(QWidget *parent) :
     layout->addWidget(sliderLabel, 1, 0);
     layout->addWidget(padLabel, 1, 1);
 
+    // joystick related
     connect(sliderControl, SIGNAL(positionChanged(int,int,int,int)), this, SLOT(positionChanged(int,int,int,int)));
     connect(padControl, SIGNAL(positionChanged(int,int,int,int)), this, SLOT(positionChanged(int,int,int,int)));
     connect(padControl, SIGNAL(mouseReleased()), this, SLOT(resetCoordinates()));
 
+    // bluetooth related
+    connect(bluetoothClient, SIGNAL(bluetoothConnected()), this, SLOT(bluetoothConnected()));
+    connect(bluetoothClient, SIGNAL(bluetoothDisconnected()), this, SLOT(bluetoothDisconnected()));
+
+    m_scanMenu = menuBar()->addMenu("Settings");
     createActions();
-    createMenus();
+    bluetoothDisconnectedMenu();
 }
 
 MainWindow::~MainWindow()
@@ -68,14 +75,33 @@ void MainWindow::resetCoordinates(){
 
 void MainWindow::createActions()
 {
-    scanAction = new QAction("Scan", this);
-    scanAction->setStatusTip("Scan for bluetooth devices");
+    m_scanAction = new QAction("Scan", this);
+    m_disconnectBluetooth = new QAction("Disconnect", this);
 
-    connect(scanAction, SIGNAL(triggered()), bluetoothClient, SLOT(startDiscovery()));
+    connect(m_scanAction, SIGNAL(triggered()), bluetoothClient, SLOT(startDiscovery()));
+    connect(m_disconnectBluetooth, SIGNAL(triggered()), bluetoothClient, SLOT(disconnectBluetooth()));
 }
 
-void MainWindow::createMenus()
-{
-    scanMenu = menuBar()->addMenu("Settings");
-    scanMenu->addAction(scanAction);
+void MainWindow::bluetoothConnected() {
+    QMessageBox::warning(this, tr("QuadControler"),
+                         "Connected to HC-06!",
+                         QMessageBox::Ok);
+    bluetoothConnectedMenu();
+}
+
+void MainWindow::bluetoothDisconnected() {
+    QMessageBox::warning(this, tr("QuadControler"),
+                         "Disconnected from HC-06!",
+                         QMessageBox::Ok);
+    bluetoothDisconnectedMenu();
+}
+
+void MainWindow::bluetoothDisconnectedMenu() {
+    m_scanMenu->removeAction(m_disconnectBluetooth);
+    m_scanMenu->addAction(m_scanAction);
+}
+
+void MainWindow::bluetoothConnectedMenu() {
+    m_scanMenu->removeAction(m_scanAction);
+    m_scanMenu->addAction(m_disconnectBluetooth);
 }

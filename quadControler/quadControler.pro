@@ -16,14 +16,16 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     joystickwidget.cpp \
     slider.cpp \
-    bluetoothhandler.cpp
+    bluetoothhandler.cpp \
+    remoteselector.cpp
 
 HEADERS  += mainwindow.h \
     joystickwidget.h \
     slider.h \
-    bluetoothhandler.h
+    bluetoothhandler.h \
+    remoteselector.h
 
-FORMS    += mainwindow.ui
+FORMS    += remoteselector.ui
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 

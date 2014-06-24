@@ -20,7 +20,6 @@ void JoyStickWidget::paintEvent(QPaintEvent *)
 
 void JoyStickWidget::mousePressEvent(QMouseEvent * event ) {
     Q_UNUSED(event)
-    qDebug()<<"mouse pressed";
 }
 
 void JoyStickWidget::mouseMoveEvent(QMouseEvent *event) {
@@ -37,7 +36,6 @@ void JoyStickWidget::mouseMoveEvent(QMouseEvent *event) {
 
 void JoyStickWidget::mouseReleaseEvent(QMouseEvent *event){
     Q_UNUSED(event)
-    qDebug()<<"mouse release";
 }
 
 //*****************************************PadControl class, deriver from JoyStickWidget**************************************************

@@ -1,78 +1,75 @@
 #include "bluetoothhandler.h"
 
-BluetoothControler::BluetoothControler(QObject *parent) : QObject(parent)
+BluetoothHandler::BluetoothHandler(QObject *parent) : QObject(parent)
 {
-
+    m_socket = NULL;
 }
 
-void BluetoothControler::getDeviceInfo()
+void BluetoothHandler::startDiscovery()
 {
-    QBluetoothLocalDevice localDevice;
-    QString localDeviceName;
+    m_remoteSelector.startDiscovery();
+    if (m_remoteSelector.exec() == QDialog::Accepted) {
+        QBluetoothServiceInfo service = m_remoteSelector.service();
 
-    // Check if Bluetooth is available on this device
-    if (localDevice.isValid()) {
+        qDebug() << "Connecting to service 2" << service.serviceName()
+                 << "on" << service.device().name();
 
-        // Turn Bluetooth on
-        localDevice.powerOn();
-
-        // Read local device name
-        localDeviceName = localDevice.name();
-        qDebug()<<"localDevice.name() = "<<localDeviceName;
-
-        // Make it visible to others
-        localDevice.setHostMode(QBluetoothLocalDevice::HostDiscoverable);
-    } else {
-        qDebug()<<"localDevice.isValid() returned false; no bluetooth device found";
+        connectBluetooth(service);
     }
 }
 
-// In your local slot, read information about the found devices
-void BluetoothControler::deviceDiscovered(const QBluetoothDeviceInfo &device)
+void BluetoothHandler::writeSocket(const QString &message) const
 {
-    qDebug() << "Found new device:" << device.name() << '(' << device.address().toString() << ')';
+    QByteArray text = message.toUtf8() + '\n';
+    qDebug() << m_socket->write(text) << " bytes sent";
 }
 
-void BluetoothControler::startDiscovery()
+void BluetoothHandler::readSocket()
 {
-    getDeviceInfo();
+    char buf[20];
+    memset(buf, 0x00, sizeof(buf));
+    qDebug()<<"readSocket";
 
-    // Create a discovery agent and connect to its signals
-    QBluetoothDeviceDiscoveryAgent *discoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
-    connect(discoveryAgent, SIGNAL(deviceDiscovered(QBluetoothDeviceInfo)),
-            this, SLOT(deviceDiscovered(QBluetoothDeviceInfo)));
-
-    // Start a discovery
-    discoveryAgent->start();
+    m_socket->read(buf, sizeof(buf));
+    qDebug()<<"Data received : " << buf;
 }
 
-void BluetoothControler::readSocket()
-{
-    qDebug()<<"read socket";
+void BluetoothHandler::disconnectBluetooth() {
+    qDebug()<<"disconnectBluetooth";
+    if(m_socket) {
+        m_socket->disconnectFromService();
+    }
 }
 
-void BluetoothControler::connected()
+void BluetoothHandler::disconnected()
 {
-    qDebug()<<"connected socket";
+    qDebug()<<"disconnected";
+    if(m_socket){
+        delete m_socket;
+        m_socket = NULL;
+    }
+    emit bluetoothDisconnected();
 }
 
-void BluetoothControler::disconnected()
+void BluetoothHandler::connectBluetooth(const QBluetoothServiceInfo &remoteService)
 {
-    qDebug()<<"disconnected socket";
-}
-
-void BluetoothControler::startClient(const QBluetoothServiceInfo &remoteService)
-{
-    if (socket)
+    if (m_socket)
         return;
 
     // Connect to service
-    socket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol);
-    qDebug() << "Create socket";
-    socket->connectToService(remoteService);
-    qDebug() << "ConnectToService done";
+    m_socket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol);
+    connect(m_socket, SIGNAL(readyRead()), this, SLOT(readSocket()));
+    connect(m_socket, SIGNAL(connected()), this, SLOT(connected()));
+    connect(m_socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
 
-    connect(socket, SIGNAL(readyRead()), this, SLOT(readSocket()));
-    connect(socket, SIGNAL(connected()), this, SLOT(connected()));
-    connect(socket, SIGNAL(disconnected()), this, SIGNAL(disconnected()));
+    qDebug() << "Create socket";
+    m_socket->connectToService(remoteService);
+    qDebug() << "ConnectToService done";
+}
+
+void BluetoothHandler::connected()
+{
+    qDebug()<<"connected socket";
+    writeSocket("test");
+    emit bluetoothConnected();
 }

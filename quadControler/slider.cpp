@@ -15,15 +15,15 @@ void Slider::paintEvent(QPaintEvent *)
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
 
-void Slider::mousePressEvent(QMouseEvent * event ){
-    qDebug()<<"slider pressed";
+void Slider::mousePressEvent(QMouseEvent * event ) {
+    Q_UNUSED(event)
 }
 
-void Slider::mouseMoveEvent(QMouseEvent *event){
-    qDebug()<<"slider move";
+void Slider::mouseMoveEvent(QMouseEvent *event) {
+    Q_UNUSED(event)
     QThread::msleep(200);
 }
 
-void Slider::mouseReleaseEvent(QMouseEvent *event){
-    qDebug()<<"slider release";
+void Slider::mouseReleaseEvent(QMouseEvent *event) {
+    Q_UNUSED(event)
 }
