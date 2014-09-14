@@ -6,6 +6,8 @@
 
 QT       += core gui bluetooth
 
+CONFIG += c++11
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = quadControler
@@ -17,15 +19,15 @@ SOURCES += main.cpp\
     joystickwidget.cpp \
     slider.cpp \
     bluetoothhandler.cpp \
-    remoteselector.cpp
+    bluetoothstatus.cpp
 
 HEADERS  += mainwindow.h \
     joystickwidget.h \
     slider.h \
     bluetoothhandler.h \
-    remoteselector.h
+    bluetoothstatus.h
 
-FORMS    += remoteselector.ui
+FORMS    += remoteselector.ui mainwindow.ui
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 

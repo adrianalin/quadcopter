@@ -7,15 +7,19 @@
 #include <QBluetoothDeviceDiscoveryAgent>
 #include <QBluetoothServiceInfo>
 #include <QBluetoothSocket>
-#include "remoteselector.h"
+#include <QBluetoothServiceDiscoveryAgent>
+
+#include "bluetoothstatus.h"
+
+class BluetoothStatus;
 
 class BluetoothHandler : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit BluetoothHandler(QObject *parent = 0);
-    void connectBluetooth(const QBluetoothServiceInfo &remoteService);
+    explicit BluetoothHandler(BluetoothStatus* bluetoothStatus, QObject *parent = 0);
+    void connectBluetooth();
     void writeSocket(const QString &message) const;
 
 public slots:
@@ -26,14 +30,16 @@ private slots:
     void readSocket();
     void connected();
     void disconnected();
-
-signals:
-    void bluetoothDisconnected();
-    void bluetoothConnected();
+    void serviceDiscovered(const QBluetoothServiceInfo &serviceInfo);
+    void discoveryFinished();
 
 private:
+    void getDeviceInfo();
+
+    QBluetoothServiceDiscoveryAgent *m_discoveryAgent;
+    BluetoothStatus* m_bluetoothStatus;
+    QBluetoothServiceInfo m_service;
     QBluetoothSocket* m_socket;
-    RemoteSelector m_remoteSelector;
 };
 
 #endif // CLIENT_H

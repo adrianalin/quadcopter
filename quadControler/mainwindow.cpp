@@ -14,10 +14,12 @@ MainWindow::MainWindow(QWidget *parent) :
     padControl = new PadControl(this);
     sliderLabel = new  QLabel("0", this);
     padLabel = new QLabel("x=0 y=0",this);
-    bluetoothClient = new BluetoothHandler(this);
+    statusLabel = new QLabel("Disconnected",this);
+    m_bluetoothHandler = new BluetoothHandler(&m_bluetoothStatus, this);
 
-    sliderLabel->setMaximumHeight(20);
-    padLabel->setMaximumHeight(20);
+    sliderLabel->setMaximumHeight(15);
+    padLabel->setMaximumHeight(15);
+    statusLabel->setMaximumHeight(15);
 
     sliderControl->setObjectName("sliderControl");
     padControl->setObjectName("padControl");
@@ -31,6 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     layout->addWidget(padControl, 0, 1);
     layout->addWidget(sliderLabel, 1, 0);
     layout->addWidget(padLabel, 1, 1);
+    layout->addWidget(statusLabel, 2, 0);
 
     // joystick related
     connect(sliderControl, SIGNAL(positionChanged(int,int,int,int)), this, SLOT(positionChanged(int,int,int,int)));
@@ -38,12 +41,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(padControl, SIGNAL(mouseReleased()), this, SLOT(resetCoordinates()));
 
     // bluetooth related
-    connect(bluetoothClient, SIGNAL(bluetoothConnected()), this, SLOT(bluetoothConnected()));
-    connect(bluetoothClient, SIGNAL(bluetoothDisconnected()), this, SLOT(bluetoothDisconnected()));
+    connect(&m_bluetoothStatus, &BluetoothStatus::statusChanged, this, &MainWindow::bluetoothStatusChanged);
 
     m_scanMenu = menuBar()->addMenu("Settings");
     createActions();
-    bluetoothDisconnectedMenu();
 }
 
 MainWindow::~MainWindow()
@@ -76,32 +77,34 @@ void MainWindow::resetCoordinates(){
 void MainWindow::createActions()
 {
     m_scanAction = new QAction("Scan", this);
-    m_disconnectBluetooth = new QAction("Disconnect", this);
+    m_disconnectBluetoothAction = new QAction("Disconnect", this);
 
-    connect(m_scanAction, SIGNAL(triggered()), bluetoothClient, SLOT(startDiscovery()));
-    connect(m_disconnectBluetooth, SIGNAL(triggered()), bluetoothClient, SLOT(disconnectBluetooth()));
-}
-
-void MainWindow::bluetoothConnected() {
-    QMessageBox::warning(this, tr("QuadControler"),
-                         "Connected to HC-06!",
-                         QMessageBox::Ok);
-    bluetoothConnectedMenu();
-}
-
-void MainWindow::bluetoothDisconnected() {
-    QMessageBox::warning(this, tr("QuadControler"),
-                         "Disconnected from HC-06!",
-                         QMessageBox::Ok);
-    bluetoothDisconnectedMenu();
-}
-
-void MainWindow::bluetoothDisconnectedMenu() {
-    m_scanMenu->removeAction(m_disconnectBluetooth);
+    connect(m_scanAction, &QAction::triggered, m_bluetoothHandler, &BluetoothHandler::startDiscovery);
+    connect(m_disconnectBluetoothAction, &QAction::triggered, m_bluetoothHandler, &BluetoothHandler::disconnectBluetooth);
     m_scanMenu->addAction(m_scanAction);
 }
 
-void MainWindow::bluetoothConnectedMenu() {
-    m_scanMenu->removeAction(m_scanAction);
-    m_scanMenu->addAction(m_disconnectBluetooth);
+void MainWindow::bluetoothStatusChanged(BluetoothStatus::BtStatus status)
+{
+    switch(status)
+    {
+    case BluetoothStatus::BtStatus::connected:
+        statusLabel->setText("Connected");
+        m_scanMenu->removeAction(m_scanAction);
+        m_scanMenu->addAction(m_disconnectBluetoothAction);
+        break;
+    case BluetoothStatus::BtStatus::disconnected:
+        statusLabel->setText("Disconnected");
+        m_scanMenu->removeAction(m_disconnectBluetoothAction);
+        m_scanMenu->addAction(m_scanAction);
+        break;
+    case BluetoothStatus::BtStatus::scanning:
+        statusLabel->setText("Scanning...");
+        break;
+    case BluetoothStatus::BtStatus::finishedScanning:
+        statusLabel->setText("Finished scaning");
+        break;
+    default:
+        break ;
+    }
 }

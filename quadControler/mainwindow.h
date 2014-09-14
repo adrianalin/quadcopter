@@ -9,6 +9,7 @@
 #include "slider.h"
 #include "joystickwidget.h"
 #include "bluetoothhandler.h"
+#include "bluetoothstatus.h"
 
 namespace Ui {
 class MainWindow;
@@ -25,22 +26,20 @@ public:
     ~MainWindow();
 
 private slots:
-    void bluetoothConnected();
-    void bluetoothDisconnected();
+    void bluetoothStatusChanged(BluetoothStatus::BtStatus status);
     void positionChanged(int x, int y, int width, int height);
     void resetCoordinates();
 
 private:
-    void bluetoothConnectedMenu();
-    void bluetoothDisconnectedMenu();
-
-    BluetoothHandler* bluetoothClient;
+    BluetoothStatus m_bluetoothStatus;
+    BluetoothHandler* m_bluetoothHandler;
     QMenu* m_scanMenu;
     QAction* m_scanAction;
-    QAction* m_disconnectBluetooth;
+    QAction* m_disconnectBluetoothAction;
     QLabel* sliderLabel, *padLabel;
     Ui::MainWindow *ui;
     QGridLayout* layout;
+    QLabel* statusLabel;
 
     JoyStickWidget* sliderControl;
     PadControl* padControl;
