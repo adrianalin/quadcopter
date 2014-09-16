@@ -1,6 +1,6 @@
 #include "bluetoothstatus.h"
 
-BluetoothStatus::BluetoothStatus()
+BluetoothStatus::BluetoothStatus(QObject *parent): QObject(parent)
 {
 }
 

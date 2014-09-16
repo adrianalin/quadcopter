@@ -1,81 +1,38 @@
+#include <QBluetoothLocalDevice>
 #include "bluetoothhandler.h"
 
-BluetoothHandler::BluetoothHandler(BluetoothStatus* bluetoothStatus, QObject *parent) : QObject(parent),
+BluetoothHandler::BluetoothHandler(BluetoothStatus *bluetoothStatus, QObject *parent) : QObject(parent),
     m_discoveryAgent(new QBluetoothServiceDiscoveryAgent(this)),
-    m_bluetoothStatus(bluetoothStatus)
+    m_bluetoothStatus(bluetoothStatus),
+    m_bluetoothrw(new BluetoothReadWrite(bluetoothStatus, this))
 {
-    m_socket = NULL;
-
+    // bluetooth discovery signals
     connect(m_discoveryAgent, SIGNAL(serviceDiscovered(QBluetoothServiceInfo)),
             this, SLOT(serviceDiscovered(QBluetoothServiceInfo)));
     connect(m_discoveryAgent, SIGNAL(finished()), this, SLOT(discoveryFinished()));
     connect(m_discoveryAgent, SIGNAL(canceled()), this, SLOT(discoveryFinished()));
 }
 
-void BluetoothHandler::writeSocket(const QString &message) const
+void BluetoothHandler::disconnectBluetooth()
 {
-    QByteArray text = message.toUtf8() + '\n';
-    qDebug() << m_socket->write(text) << " bytes sent";
-}
-
-void BluetoothHandler::readSocket()
-{
-    char buf[20];
-    memset(buf, 0x00, sizeof(buf));
-    m_socket->read(buf, sizeof(buf));
-    qDebug()<<"Data received : " << buf;
-}
-
-void BluetoothHandler::disconnectBluetooth() {
-    qDebug()<<"disconnectBluetooth";
-    if(m_socket) {
-        m_socket->disconnectFromService();
-    }
-}
-
-void BluetoothHandler::disconnected()
-{
-    qDebug()<<"disconnected";
-    m_bluetoothStatus->setBluetoothStatus(BluetoothStatus::BtStatus::disconnected);
-    if(m_socket){
-        delete m_socket;
-        m_socket = NULL;
-    }
-}
-
-void BluetoothHandler::connected()
-{
-    m_bluetoothStatus->setBluetoothStatus(BluetoothStatus::BtStatus::connected);
-    qDebug()<<"connected socket";
-    writeSocket("test");
-}
-
-void BluetoothHandler::connectBluetooth()
-{
-    Q_ASSERT(!m_socket);
-    if(!m_service.isValid())
-        return ;
-
-    // Connect to service
-    m_socket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol);
-    connect(m_socket, SIGNAL(readyRead()), this, SLOT(readSocket()));
-    connect(m_socket, SIGNAL(connected()), this, SLOT(connected()));
-    connect(m_socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
-
-    qDebug() << "Create socket";
-    m_socket->connectToService(m_service);
-    qDebug() << "ConnectToService done";
+    m_bluetoothrw->disconnectFromService();
 }
 
 void BluetoothHandler::discoveryFinished()
 {
     qDebug()<<Q_FUNC_INFO;
     m_bluetoothStatus->setBluetoothStatus(BluetoothStatus::BtStatus::finishedScanning);
-    connectBluetooth();
+    if(!m_service.isValid())
+    {
+        qWarning()<<"Service is not valid; cancel connection;";
+        return ;
+    }
+    m_bluetoothrw->connectToService(m_service);
 }
 
 void BluetoothHandler::serviceDiscovered(const QBluetoothServiceInfo &serviceInfo)
 {
+    qDebug()<<Q_FUNC_INFO;
     //    qDebug() << "Discovered service on"
     //             << serviceInfo.device().name() << serviceInfo.device().address().toString();
     //    qDebug() << "\tService name:" << serviceInfo.serviceName();
@@ -86,7 +43,6 @@ void BluetoothHandler::serviceDiscovered(const QBluetoothServiceInfo &serviceInf
     //    qDebug() << "\tL2CAP protocol service multiplexer:"
     //             << serviceInfo.protocolServiceMultiplexer();
     //    qDebug() << "\tRFCOMM server channel:" << serviceInfo.serverChannel();
-    qDebug()<<Q_FUNC_INFO;
 
     QString remoteName;
     if (serviceInfo.device().name().isEmpty())
@@ -94,13 +50,13 @@ void BluetoothHandler::serviceDiscovered(const QBluetoothServiceInfo &serviceInf
     else
         remoteName = serviceInfo.device().name();
 
-    qDebug()<<"remoteName = "<<remoteName;
-    if(!remoteName.contains("HC-06"))
+    qDebug() << "remoteName = " << remoteName;
+    if (!remoteName.contains("HC-06"))
     {
         qWarning()<<"This is not HC-06";
         return;
     }
-    Q_ASSERT(serviceInfo.isValid());
+    Q_ASSERT (serviceInfo.isValid());
     m_service = serviceInfo;
 }
 
@@ -119,9 +75,10 @@ void BluetoothHandler::startDiscovery()
 
 void BluetoothHandler::getDeviceInfo()
 {
+    qDebug()<<Q_FUNC_INFO;
     QBluetoothLocalDevice localDevice;
-    Q_ASSERT(localDevice.isValid());
-
     localDevice.powerOn();
+
+    Q_ASSERT(localDevice.isValid());
     qDebug() << "localDevice.name() = " << localDevice.name();
 }

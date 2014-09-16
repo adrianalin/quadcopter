@@ -14,7 +14,7 @@ public:
         disconnected
     };
 
-    BluetoothStatus();
+    explicit BluetoothStatus(QObject* parent = 0);
     void setBluetoothStatus(BtStatus status);
 
 signals:

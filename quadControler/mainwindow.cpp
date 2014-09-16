@@ -15,6 +15,8 @@ MainWindow::MainWindow(QWidget *parent) :
     sliderLabel = new  QLabel("0", this);
     padLabel = new QLabel("x=0 y=0",this);
     statusLabel = new QLabel("Disconnected",this);
+
+    // bluetooth handler
     m_bluetoothHandler = new BluetoothHandler(&m_bluetoothStatus, this);
 
     sliderLabel->setMaximumHeight(15);
