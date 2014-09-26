@@ -3,8 +3,9 @@
 #include <QMouseEvent>
 
 JoyStickWidget::JoyStickWidget(QWidget* parent) : QWidget(parent)
+  , m_eventRate(0)
+  , m_accelerate(0)
 {
-    eventRate = 0;
 }
 
 JoyStickWidget::~JoyStickWidget(){
@@ -23,18 +24,27 @@ void JoyStickWidget::mousePressEvent(QMouseEvent * event ) {
 }
 
 void JoyStickWidget::mouseMoveEvent(QMouseEvent *event) {
-    eventRate++;
-    if(eventRate%10 != 0)
+    m_eventRate++;
+    if (m_eventRate % 10 != 0)
         return ;
 
     int y = event->y() - this->height();
     int x = event->x();
 
     if((y<=0) && (y>=-this->height()) && (x>0) && (x<this->width()))
-        emit positionChanged(x, abs(y), this->width(), this->height());
+        setAccelerate(abs(y));
 }
 
-void JoyStickWidget::mouseReleaseEvent(QMouseEvent *event){
+void JoyStickWidget::setAccelerate(int y)
+{
+    if (m_accelerate == y)
+        return ;
+    m_accelerate = y;
+    emit positionChanged(m_accelerate);
+}
+
+void JoyStickWidget::mouseReleaseEvent(QMouseEvent *event)
+{
     Q_UNUSED(event)
 }
 
@@ -51,7 +61,8 @@ PadControl::~PadControl()
 
 }
 
-void PadControl::paintEvent(QPaintEvent *){
+void PadControl::paintEvent(QPaintEvent *)
+{
     QStyleOption opt;
     opt.init(this);
     QPainter p(this);
@@ -63,7 +74,30 @@ void PadControl::paintEvent(QPaintEvent *){
     painter.drawLine(this->width()/2, 0, this->width()/2, this->height());
 }
 
-void PadControl::mouseReleaseEvent(QMouseEvent *event){
+void PadControl::mouseMoveEvent(QMouseEvent *event)
+{
+    int xCoord, yCoord;
+    int y = event->y() - this->height();
+    int x = event->x();
+    if((y<=0) && (y>=-this->height()) && (x>0) && (x<this->width()))
+    {
+        xCoord = event->x() - this->width()/2;
+        yCoord = this->height()/2 - event->y();
+        setXY(xCoord, yCoord);
+    }
+}
+
+void PadControl::setXY(int x, int y)
+{
+    if((m_x == x) && (m_y == y))
+        return ;
+    m_x = x;
+    m_y = y;
+    emit positionChanged(m_x, m_y);
+}
+
+void PadControl::mouseReleaseEvent(QMouseEvent *event)
+{
     Q_UNUSED(event)
-    emit mouseReleased();
+    setXY(0, 0);
 }

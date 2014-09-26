@@ -3,21 +3,18 @@
 #include "QMessageBox"
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , m_bluetoothHandler(new BluetoothHandler(&m_bluetoothStatus, this))
+    , sliderLabel(new QLabel("0", this))
+    , padLabel(new QLabel("x=0 y=0", this))
+    , statusLabel(new QLabel("Disconnected", this))
+    , sliderControl(new JoyStickWidget(this))
+    , padControl(new PadControl(this))
 {
     ui->setupUi(this);
     setCentralWidget(ui->widget);
-
     layout = new QGridLayout(ui->widget);
-    sliderControl = new JoyStickWidget(this);
-    padControl = new PadControl(this);
-    sliderLabel = new  QLabel("0", this);
-    padLabel = new QLabel("x=0 y=0",this);
-    statusLabel = new QLabel("Disconnected",this);
-
-    // bluetooth handler
-    m_bluetoothHandler = new BluetoothHandler(&m_bluetoothStatus, this);
 
     sliderLabel->setMaximumHeight(15);
     padLabel->setMaximumHeight(15);
@@ -38,9 +35,8 @@ MainWindow::MainWindow(QWidget *parent) :
     layout->addWidget(statusLabel, 2, 0);
 
     // joystick related
-    connect(sliderControl, SIGNAL(positionChanged(int,int,int,int)), this, SLOT(positionChanged(int,int,int,int)));
-    connect(padControl, SIGNAL(positionChanged(int,int,int,int)), this, SLOT(positionChanged(int,int,int,int)));
-    connect(padControl, SIGNAL(mouseReleased()), this, SLOT(resetCoordinates()));
+    connect(sliderControl, &JoyStickWidget::positionChanged, this, &MainWindow::onSliderPositionChanged);
+    connect(padControl, &PadControl::positionChanged, this, &MainWindow::onPadControlPositionChanged);
 
     // bluetooth related
     connect(&m_bluetoothStatus, &BluetoothStatus::statusChanged, this, &MainWindow::bluetoothStatusChanged);
@@ -54,26 +50,14 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-
-void MainWindow::positionChanged(int x, int y, int width, int height)
+void MainWindow::onSliderPositionChanged(int y)
 {
-    int xCoord, yCoord;
-
-
-    if(QObject::sender()->objectName() == "sliderControl")
-    {
-        sliderLabel->setText(QString::number(y));
-    }
-    else if(QObject::sender()->objectName() == QString("padControl"))
-    {
-        xCoord = x-width/2;
-        yCoord = y-height/2;
-        padLabel->setText("x=" + QString::number(xCoord) + " y=" + QString::number(yCoord));
-    }
+    sliderLabel->setText(QString::number(y));
 }
 
-void MainWindow::resetCoordinates(){
-    padLabel->setText("x=0 y=0");
+void MainWindow::onPadControlPositionChanged(int x, int y)
+{
+    padLabel->setText("x=" + QString::number(x) + " y=" + QString::number(y));
 }
 
 void MainWindow::createActions()

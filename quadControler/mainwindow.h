@@ -27,19 +27,20 @@ public:
 
 private slots:
     void bluetoothStatusChanged(BluetoothStatus::BtStatus status);
-    void positionChanged(int x, int y, int width, int height);
-    void resetCoordinates();
+    void onSliderPositionChanged(int y);
+    void onPadControlPositionChanged(int x, int y);
 
 private:
+    Ui::MainWindow *ui;
     BluetoothStatus m_bluetoothStatus;
     BluetoothHandler* m_bluetoothHandler;
     QMenu* m_scanMenu;
     QAction* m_scanAction;
     QAction* m_disconnectBluetoothAction;
-    QLabel* sliderLabel, *padLabel;
-    Ui::MainWindow *ui;
-    QGridLayout* layout;
+    QLabel* sliderLabel;
+    QLabel* padLabel;
     QLabel* statusLabel;
+    QGridLayout* layout;
 
     JoyStickWidget* sliderControl;
     PadControl* padControl;
