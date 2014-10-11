@@ -1,10 +1,10 @@
 #include <QBluetoothLocalDevice>
 #include "bluetoothhandler.h"
 
-BluetoothHandler::BluetoothHandler(BluetoothStatus *bluetoothStatus, QObject *parent) : QObject(parent),
+BluetoothHandler::BluetoothHandler(BluetoothStatus *bluetoothStatus, BluetoothReadWrite *btRW, QObject *parent) : QObject(parent),
     m_discoveryAgent(new QBluetoothServiceDiscoveryAgent(this)),
     m_bluetoothStatus(bluetoothStatus),
-    m_bluetoothrw(new BluetoothReadWrite(bluetoothStatus, this))
+    m_bluetoothRW(btRW)
 {
     // bluetooth discovery signals
     connect(m_discoveryAgent, SIGNAL(serviceDiscovered(QBluetoothServiceInfo)),
@@ -15,7 +15,7 @@ BluetoothHandler::BluetoothHandler(BluetoothStatus *bluetoothStatus, QObject *pa
 
 void BluetoothHandler::disconnectBluetooth()
 {
-    m_bluetoothrw->disconnectFromService();
+    m_bluetoothRW->disconnectFromService();
 }
 
 void BluetoothHandler::discoveryFinished()
@@ -27,7 +27,7 @@ void BluetoothHandler::discoveryFinished()
         qWarning()<<"Service is not valid; cancel connection;";
         return ;
     }
-    m_bluetoothrw->connectToService(m_service);
+    m_bluetoothRW->connectToService(m_service);
 }
 
 void BluetoothHandler::serviceDiscovered(const QBluetoothServiceInfo &serviceInfo)

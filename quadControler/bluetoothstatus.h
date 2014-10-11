@@ -16,6 +16,7 @@ public:
 
     explicit BluetoothStatus(QObject* parent = 0);
     void setBluetoothStatus(BtStatus status);
+    BtStatus bluetoothStatus();
 
 signals:
     void statusChanged(BluetoothStatus::BtStatus);

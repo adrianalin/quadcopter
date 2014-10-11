@@ -15,16 +15,18 @@ public:
     explicit BluetoothReadWrite(BluetoothStatus* status, QObject* parent=0);
     void connectToService(QBluetoothServiceInfo service);
     void disconnectFromService();
-    void writeSocket(const QString &message) const;
+    void sendCommand(const QVector<int> &data);
 
 private slots:
     void connectedToService();
     void disconnectedFromService();
+    void writeSocket(const char* message, const int len) const;
     void readSocket();
 
 private:
     QBluetoothSocket* m_btSocket;
     BluetoothStatus* m_bluetoothStatus;
+    QVector<int> m_btData;
 };
 
 #endif // BLUETOOTHREADWRITE_H

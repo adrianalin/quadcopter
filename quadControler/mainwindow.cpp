@@ -4,13 +4,15 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
-    , ui(new Ui::MainWindow)
-    , m_bluetoothHandler(new BluetoothHandler(&m_bluetoothStatus, this))
-    , sliderLabel(new QLabel("0", this))
-    , padLabel(new QLabel("x=0 y=0", this))
-    , statusLabel(new QLabel("Disconnected", this))
-    , sliderControl(new JoyStickWidget(this))
-    , padControl(new PadControl(this))
+  , ui(new Ui::MainWindow)
+  , sliderLabel(new QLabel("0", this))
+  , padLabel(new QLabel("x=0 y=0", this))
+  , statusLabel(new QLabel("Disconnected", this))
+  , sliderControl(new JoyStickWidget(this))
+  , padControl(new PadControl(this))
+  , m_bluetoothRW(new BluetoothReadWrite(&m_bluetoothStatus, this))
+  , m_bluetoothHandler(new BluetoothHandler(&m_bluetoothStatus, m_bluetoothRW, this))
+  , m_btData()
 {
     ui->setupUi(this);
     setCentralWidget(ui->widget);
@@ -43,6 +45,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_scanMenu = menuBar()->addMenu("Settings");
     createActions();
+
+    m_btData.fill(0, 3);
 }
 
 MainWindow::~MainWindow()
@@ -53,11 +57,19 @@ MainWindow::~MainWindow()
 void MainWindow::onSliderPositionChanged(int y)
 {
     sliderLabel->setText(QString::number(y));
+    Q_ASSERT(y<255);
+    m_btData[0] = y;
+    m_bluetoothRW->sendCommand(m_btData);
 }
 
 void MainWindow::onPadControlPositionChanged(int x, int y)
 {
     padLabel->setText("x=" + QString::number(x) + " y=" + QString::number(y));
+    Q_ASSERT(x<255);
+    Q_ASSERT(y<255);
+    m_btData[1] = x;
+    m_btData[2] = y;
+    m_bluetoothRW->sendCommand(m_btData);
 }
 
 void MainWindow::createActions()

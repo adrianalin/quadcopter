@@ -13,7 +13,7 @@ class BluetoothHandler : public QObject
     Q_OBJECT
 
 public:
-    explicit BluetoothHandler(BluetoothStatus* bluetoothStatus, QObject *parent = 0);
+    explicit BluetoothHandler(BluetoothStatus* bluetoothStatus, BluetoothReadWrite* btRW, QObject *parent = 0);
 
 public slots:
     void disconnectBluetooth();
@@ -29,7 +29,7 @@ private:
     QBluetoothServiceDiscoveryAgent *m_discoveryAgent;
     BluetoothStatus* m_bluetoothStatus;
     QBluetoothServiceInfo m_service;
-    BluetoothReadWrite* m_bluetoothrw;
+    BluetoothReadWrite* m_bluetoothRW;
 };
 
 #endif // CLIENT_H

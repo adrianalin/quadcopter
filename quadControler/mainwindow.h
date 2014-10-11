@@ -10,6 +10,7 @@
 #include "joystickwidget.h"
 #include "bluetoothhandler.h"
 #include "bluetoothstatus.h"
+#include "bluetoothreadwrite.h"
 
 namespace Ui {
 class MainWindow;
@@ -32,8 +33,6 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    BluetoothStatus m_bluetoothStatus;
-    BluetoothHandler* m_bluetoothHandler;
     QMenu* m_scanMenu;
     QAction* m_scanAction;
     QAction* m_disconnectBluetoothAction;
@@ -44,6 +43,12 @@ private:
 
     JoyStickWidget* sliderControl;
     PadControl* padControl;
+
+    BluetoothStatus m_bluetoothStatus;
+    BluetoothReadWrite* m_bluetoothRW;
+    BluetoothHandler* m_bluetoothHandler;
+
+    QVector<int> m_btData;
 };
 
 #endif // MAINWINDOW_H
