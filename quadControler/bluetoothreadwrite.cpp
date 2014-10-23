@@ -7,7 +7,7 @@ BluetoothReadWrite::BluetoothReadWrite(BluetoothStatus *status, QObject *parent)
 {
     connect(m_btSocket, SIGNAL(connected()), this, SLOT(connectedToService()));
     connect(m_btSocket, SIGNAL(disconnected()), this, SLOT(disconnectedFromService()));
-    connect(m_btSocket, SIGNAL(readyRead()), this, SLOT(readSocket()));
+    connect(m_btSocket, &QBluetoothSocket::readyRead, this, &BluetoothReadWrite::readSocket);
 }
 
 void BluetoothReadWrite::connectToService(QBluetoothServiceInfo service)
@@ -35,26 +35,47 @@ void BluetoothReadWrite::disconnectedFromService()
     m_bluetoothStatus->setBluetoothStatus(BluetoothStatus::BtStatus::disconnected);
 }
 
-void BluetoothReadWrite::sendCommand(const QVector<int> &data)
+void BluetoothReadWrite::encodeMessage(const QVector<int> &data)
 {
-    static char charData[3];
-    static const int lengthOfData = sizeof(charData) / sizeof(char);
+    /* i - integer
+     * parameter will be encoded as:
+     ** i<numberLength><paramNumber>
+     *
+     * ex. data[3] = {12, 124, -12}
+     * 12 -> i212
+     * 124 -> i3124
+     * -12 -> i3-12
+     * message = i212i3124i3-12s -> total length is 15
+     *
+     * l- length
+     * final message will be encoded as:
+     ** l<numberLength><messageLengthNumber>
+     * final message will be -> l215i212i3124i3-12
+     */
+    Q_ASSERT(data.length() == 3);
 
-    m_btData = data;
-    qDebug()<<"Data to send: " << m_btData[0] << " " << m_btData[1] << " " << m_btData[2];
-    charData[0] = static_cast<char>(m_btData[0]);
-    charData[1] = static_cast<char>(m_btData[1]);
-    charData[2] = static_cast<char>(m_btData[2]);
+    static QString message, paramString, messageLength;
+    message.clear();
+
+    paramString = QString::number(data[0]);
+    message = message + "i" + QString::number(paramString.length()) + paramString;
+    paramString = QString::number(data[1]);
+    message = message + "i" + QString::number(paramString.length()) + paramString;
+    paramString = QString::number(data[2]);
+    message = message + "i" + QString::number(paramString.length()) + paramString + "s";
+
+    message.prepend(QString::number(message.length()));
+
+    qDebug() << "message = " << message;
 
     if (m_bluetoothStatus->bluetoothStatus() == BluetoothStatus::BtStatus::connected)
-        writeSocket(charData, lengthOfData);
+        writeSocket(message.toUtf8(), message.length());
     else
         qDebug() << "Could not send data. Disconnected.";
 }
 
-void BluetoothReadWrite::writeSocket(const char* message, const int len) const
+void BluetoothReadWrite::writeSocket(const char* message, const int len)
 {
-    qDebug() << "Write to socket : " << message;
     if (m_btSocket->write(message, len) != len)
         qDebug() << "Could not send all data";
 }
@@ -63,6 +84,6 @@ void BluetoothReadWrite::readSocket()
 {
     char buf[20];
     memset(buf, 0x00, sizeof(buf));
-    m_btSocket->read(buf, sizeof(buf));
+    m_btSocket->readLine(buf, sizeof(buf));
     qDebug()<<"Data received : " << buf;
 }

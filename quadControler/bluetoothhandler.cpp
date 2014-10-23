@@ -22,7 +22,7 @@ void BluetoothHandler::discoveryFinished()
 {
     qDebug()<<Q_FUNC_INFO;
     m_bluetoothStatus->setBluetoothStatus(BluetoothStatus::BtStatus::finishedScanning);
-    if(!m_service.isValid())
+    if (!m_service.isValid())
     {
         qWarning()<<"Service is not valid; cancel connection;";
         return ;

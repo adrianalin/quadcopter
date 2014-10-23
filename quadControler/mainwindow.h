@@ -32,6 +32,9 @@ private slots:
     void onPadControlPositionChanged(int x, int y);
 
 private:
+    void sendBTCommand();
+
+    QTimer m_writeTimer;
     Ui::MainWindow *ui;
     QMenu* m_scanMenu;
     QAction* m_scanAction;

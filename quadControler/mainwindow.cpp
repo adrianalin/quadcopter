@@ -47,6 +47,11 @@ MainWindow::MainWindow(QWidget *parent) :
     createActions();
 
     m_btData.fill(0, 3);
+
+
+    m_writeTimer.setInterval(500);
+    m_writeTimer.setSingleShot(true);
+    m_writeTimer.start();
 }
 
 MainWindow::~MainWindow()
@@ -57,19 +62,29 @@ MainWindow::~MainWindow()
 void MainWindow::onSliderPositionChanged(int y)
 {
     sliderLabel->setText(QString::number(y));
-    Q_ASSERT(y<255);
+    Q_ASSERT (y<255);
+
     m_btData[0] = y;
-    m_bluetoothRW->sendCommand(m_btData);
+    sendBTCommand();
 }
 
 void MainWindow::onPadControlPositionChanged(int x, int y)
 {
     padLabel->setText("x=" + QString::number(x) + " y=" + QString::number(y));
-    Q_ASSERT(x<255);
-    Q_ASSERT(y<255);
+    Q_ASSERT (x<255);
+    Q_ASSERT (y<255);
+
     m_btData[1] = x;
     m_btData[2] = y;
-    m_bluetoothRW->sendCommand(m_btData);
+    sendBTCommand();
+}
+
+void MainWindow::sendBTCommand()
+{
+    if (m_writeTimer.isActive() == true)
+        return;
+    m_writeTimer.start();
+    m_bluetoothRW->encodeMessage(m_btData);
 }
 
 void MainWindow::createActions()
