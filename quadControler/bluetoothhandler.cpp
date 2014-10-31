@@ -51,9 +51,9 @@ void BluetoothHandler::serviceDiscovered(const QBluetoothServiceInfo &serviceInf
         remoteName = serviceInfo.device().name();
 
     qDebug() << "remoteName = " << remoteName;
-    if (!remoteName.contains("HC-06"))
+    if (!remoteName.contains("aerial"))
     {
-        qWarning()<<"This is not HC-06";
+        qWarning()<<"This is not aerial";
         return;
     }
     Q_ASSERT (serviceInfo.isValid());

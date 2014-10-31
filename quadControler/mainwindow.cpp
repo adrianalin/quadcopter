@@ -49,7 +49,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_btData.fill(0, 3);
 
 
-    m_writeTimer.setInterval(500);
+    m_writeTimer.setInterval(200);
     m_writeTimer.setSingleShot(true);
     m_writeTimer.start();
 }

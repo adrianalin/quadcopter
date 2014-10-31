@@ -59,13 +59,13 @@ void BluetoothReadWrite::encodeMessage(const QVector<int> &data)
     message.clear();
     param.clear();
 
-    for (int i=0; i < data.length(); i++)
-    {
-        param = QString::number(data[i]);
-        message.append("i" + QString::number(param.length()) + param);
-    }
+    param = QString::number(data[0]);
+    message.append(param);
+    param = QString::number(data[1]);
+    message.append("i" + param);
+    param = QString::number(data[2]);
+    message.append("i" + param);
     message.append('S');
-    message.prepend(QString::number(message.length()));
 
     qDebug() << "message = " << message;
 
